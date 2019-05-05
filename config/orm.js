@@ -1,79 +1,49 @@
 var express = require("express");
     var app = express();
 
-var Connection = require ("./connection.js");
-Connection.connection();
+var connection = require ("./connection.js");
 
- function orm(){
-     ///////INSERT ONE////////
-     this.insertOne = function(tableName, column1, column2,value1, value2){
-        app.post("/api/post", function(req, res){
-            console.log("POST", req.body);
-            var sql = "INSERT INTO " + tableName;
-            sql += "("+ column1 + ", " + column2 + ")";  
-            sql += " VALUES";
-            sql += "(" +value1 + ", " + value2 + ")";
-            sql += ";";
-            connection.query(sql, [
-                req.body.burger_name,
-                req.body.devoured
-            ], function(err, sqlResult){
-                if(err){
-                    console.log("OH DEAR GOD SO MUCH IS GONE BAD!! WHY IS THERE SO MUCH BLOOD??");
-                    throw err;
-                };
-                res.json(sqlResult);
-                return(sqlResult);
-            });
-        }); 
+function objToSQL(object){
+    var arr=[];
+    for (var key in object){
+        if (ob.hasOwnProperty(key)){
+            arr.push(key+ '='+ob[key]);
+        }
     }
+    return arr.toString();
+}
 
-    ////////SELECT ALL////////
-    this.selectAll = function(tableName){
-        app.get("/api/get", function(req, res){
-            var sql = "SELECT * FROM " + tableName + " ORDER BY ID DESC;"
-            connection.query(sql, function(err, sqlResult){
-                if(err){
-                    console.log("OH DEAR GOD SO MUCH IS GONE BAD!! WHY IS THERE SO MUCH BLOOD??");
-                    throw err;
-                };
-                res.json(sqlResult);
-                return(sqlResult);
-            });
-            
-        }); 
-    }
-
-
-    ///////UPDATE ONE () ///////
-    this.updateOne= function(tableName, booleanValue, idNumber){
-    app.put("/api/put", function(req, res){
-        console.log("PUT", req.body);
+var orm ={
+    selectAll: function(table, cb){
+        var queryString = 'SELECT * FROM' + table + " ;";
+        connection.query(queryString, function(err, result){
+            if (err) throw err;
+            cb(result);
+        })
+    },
+    insertOne: function(table, burger_name, cb){
+        var queryString = "INSERT INTO " + table + " (burger_name) VALUES ('" + burger_name + "')";
+        connection.query(queryString, function(err, result){
+            if (err) throw err;
+            cb(result);
+        });
+    },
+    updateOne: function(tableName, objColVals, condition, cb){
         var sql = "UPDATE " + tableName;
-        sql += " SET boolean= " + booleanValue;
-        sql += " WHERE id= " + idNumber;
+        sql += " SET " + objToSQL(objColVals);
+        sql += " WHERE " + condition;
         sql += " ;";
     
-        connection.query(sql, [
-            req.body.boolean,
-            req.body.id
-        ], function(err, sqlResult){
+        connection.query(sql, function(err, sqlResult){
             if(err){
                 console.log("OH DEAR GOD SO MUCH IS GONE BAD!! WHY IS THERE SO MUCH BLOOD??");
                 throw err;
             };
             res.json(sqlResult);
-           return(sqlResult);
+            return(sqlResult);
         });
-    }); 
+    },
+}; 
 
-
-
-    ///////LISTENING PORT (NOT IN A FUNCTION LIKE ANDY SAID :) )
-        app.listen(PORT, function(){
-            console.log("Web server is running on port: ", PORT);
-        });
-    }
- }
 
  module.exports = orm;
