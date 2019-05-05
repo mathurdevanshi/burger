@@ -1,11 +1,7 @@
 
 
 module.exports = function connection(){
-    var express = require("express");
-    var app = express(); 
-    var PORT = 8080; 
     var mysql = require("mysql");
-    app.use(express.json());
 
     var connection = mysql.createConnection({
         host: "localhost",
